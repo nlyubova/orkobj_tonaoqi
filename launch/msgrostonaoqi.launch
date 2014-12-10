@@ -1,0 +1,16 @@
+<launch>
+
+  <arg name="nao_ip" default="$(optenv NAO_IP 10.0.128.63)" />
+  <arg name="nao_port" default="$(optenv NAO_PORT 9559)" />
+
+  <!-- Use CPP node by default for naoqi_sensors -->
+  <arg name="force_python" default="false" />
+
+  <node pkg="msgrostonaoqi" type="msgrostonaoqi" name="msgrostonaoqi_converter" args="--pip=$(arg nao_ip) --pport=$(arg nao_port)" output="screen">
+<!--    <param name="object_topic" value="/recognized_object_array" /> -->
+    <param name="table_topic" value="/table_array" />
+<!--    <remap from="object_topic" to="/recognized_object_array" /> -->
+   <param name="object_topic" value="/recognized_object_array" /> 
+  </node>
+
+</launch>
