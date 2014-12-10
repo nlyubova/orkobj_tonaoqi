@@ -53,10 +53,3 @@ if( ${NAOqi_FOUND} AND ${Boost_FOUND} )
 else()
   message(STATUS "Cannot find NAOqi C++ sdk; C++ nodes will NOT be built")
 endif()
-
-#install(TARGETS ${PROJECTNAME}
-#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-#install(DIRECTORY config
-#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
