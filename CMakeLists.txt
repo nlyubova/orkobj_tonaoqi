@@ -3,7 +3,7 @@
 ## Copyright (c) Aldebaran Robotics 2014 All Rights Reserved
 
 cmake_minimum_required(VERSION 2.8)
-SET(PROJECTNAME msgrostonaoqi)
+SET(PROJECTNAME orkobj_tonaoqi)
 
 project(${PROJECTNAME})
 
@@ -17,6 +17,7 @@ find_package(NAOqi QUIET COMPONENTS
     alvalue
     qi
     qitype
+    #visionrecognition
 )
 
 find_package(Boost QUIET COMPONENTS program_options signals)
@@ -30,22 +31,28 @@ catkin_package(CATKIN_DEPENDS roscpp std_msgs object_recognition_msgs
 set(SRCS
   src/msgrostonaoqi.cpp
   src/main.cpp
+  #src/visualreco.cpp
+  include/orkobj_tonaoqi/msgrostonaoqi.hpp
+  #include/orkobj_tonaoqi/visualreco.hpp
 )
 
 if( ${NAOqi_FOUND} AND ${Boost_FOUND} )
   message(STATUS "NAOqi C++ SDK found; C++ nodes will be built")
 
   include_directories( SYSTEM
+    include/orkobj_tonaoqi
     ${catkin_INCLUDE_DIRS}
     ${object_recognition_msgs_INCLUDE_DIRS}
     ${NAOqi_INCLUDE_DIRS}
-    ${Boost_INCLUDE_DIRS})
+    ${Boost_INCLUDE_DIRS}
+  )
 
   add_executable(${PROJECTNAME} ${SRCS})
   target_link_libraries(${PROJECTNAME}
     ${catkin_LIBRARIES}
     ${NAOqi_LIBRARIES}
-    ${Boost_LIBRARIES})
+    ${Boost_LIBRARIES}
+  )
   add_dependencies(${PROJECTNAME} ${catkin_EXPORTED_TARGETS})
 
   install(TARGETS ${PROJECTNAME}

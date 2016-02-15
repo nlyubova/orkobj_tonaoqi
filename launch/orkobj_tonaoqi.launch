@@ -1,0 +1,22 @@
+<launch>
+
+  <!-- <arg name="nao_ip" default="10.0.128.125" /> -->
+  <arg name="nao_ip" default="10.0.161.5" />
+  <arg name="nao_port" default="9559" />
+  <!-- <arg name="pc_ip" default="10.0.132.64" /> -->
+  <arg name="pc_ip" default="10.0.164.125" />
+  <arg name="pc_port" default="9559" />
+
+  <!-- Use CPP node by default for naoqi_sensors -->
+  <arg name="force_python" default="false" />
+
+  <node pkg="orkobj_tonaoqi" type="orkobj_tonaoqi" name="orkobj_tonaoqi" args=" --pip=$(arg nao_ip) --pport=$(arg nao_port) --ip=$(arg pc_ip) --port=$(arg pc_port)" output="screen">
+   <param name="table_topic" value="/table_array" />
+   <param name="object_topic" value="/recognized_object_array" /> 
+   <param name="nao_ip" value="$(arg nao_ip)" />
+   <param name="pc_ip" value="$(arg pc_ip)" />
+   <param name="nao_port" value="$(arg nao_port)" />
+   <param name="pc_port" value="$(arg pc_port)" />
+  </node>
+
+</launch>

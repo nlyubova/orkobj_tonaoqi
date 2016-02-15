@@ -1,12 +1,12 @@
-#include "msgrostonaoqi.h"
+#include "msgrostonaoqi.hpp"
 
 #include <boost/program_options.hpp>
 
 /**
   launch from the command line
-    ./ork/devel/lib/msgrostonaoqi/./msgrostonaoqi --pip 10.0.128.63 --pport 9559
+    ./ork/devel/lib/orkobj_tonaoqi/./orkobj_tonaoqi --pip 10.0.128.63 --pport 9559
   or use the ros.launch file
-    roslaunch msgrostonaoqi msgrostonaoqi.launch
+    roslaunch orkobj_tonaoqi orkobj_tonaoqi.launch
  */
 
 void parse_command_line(int argc, char ** argv, std::string &m_pip, std::string &m_ip, int &m_port, int &m_pport)
@@ -47,31 +47,33 @@ void parse_command_line(int argc, char ** argv, std::string &m_pip, std::string 
 
 int main(int argc, char **argv)
 {
-  std::string m_pip = "nao.local";
+  std::string m_pip = "10.0.163.217"; //"nao.local";
   std::string m_ip = "0.0.0.0";
-  int m_port = 0;
+  int m_port = 9559;
   int m_pport = 9559;
-
   parse_command_line(argc, argv, m_pip, m_ip, m_port, m_pport);
+  //std::cout << "launching with parameters: " << m_pip << " " << m_ip << " " << m_port << " " << m_pport << std::endl;
 
   //initialize the ros node
-  std::stringstream strstr;
+  /*std::stringstream strstr;
   strstr << "__master=http://" << m_pip << ":" << m_pport;
   char * m_master = &strstr.str()[0];
-  char *argv_l[] = {"msgrostonaoqi", m_master, NULL};
-  //char *argv_l[] = {"msgrostonaoqi", "__master=http://10.0.128.63:11311", NULL};
+  char *argv_l[] = {"convertmsg_orktonaoqi", m_master, NULL};
   int argc_l = 2;
-  ros::init(argc_l, argv_l, "msgrostonaoqi");
+  ros::init(argc_l, argv_l, "orkobj_tonaoqi");*/
+  ros::init(argc, argv, "orkobj_tonaoqi");
 
   Msgrostonaoqi wrapper(m_pip, m_ip, m_port, m_pport);
-  wrapper.init(argc, argv);
-  ros::Rate rate(20);
+  //wrapper.init();//argc, argv);
+  ros::Rate rate(10);
 
-	while(ros::ok())
-	{
-  	ros::spinOnce();
-    //rate.sleep();
+  while(ros::ok())
+  {
+    ros::spinOnce();
+    rate.sleep();
   }
+
+  ros::shutdown();
 
   return 0;
 }

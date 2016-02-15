@@ -1,7 +1,7 @@
 <package>
-  <name>msgrostonaoqi</name>
+  <name>orkobj_tonaoqi</name>
   <version>0.3.0</version>
-  <description>Wrapper: ROS to NAOqi</description>
+  <description>Wrapper of ORK object recognition messages to NAOqi events</description>
   <maintainer email="natalia.lyubova@gmail.com">Natalia Lyubova</maintainer>
   <license>BSD</license>
 
@@ -11,7 +11,7 @@
 
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
-	<run_depend>object_recognition_msgs</run_depend>
+  <run_depend>object_recognition_msgs</run_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 </package>
