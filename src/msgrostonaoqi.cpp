@@ -1,4 +1,4 @@
-#include "msgrostonaoqi.h"
+#include "msgrostonaoqi.hpp"
 
 #include <string>
 #include <iostream>
@@ -9,27 +9,58 @@
 #include <qi/log.hpp>
 
 //! @brief Define Log category
-qiLogCategory("ALMsgRosToNaoqi");
+qiLogCategory("orkobj_tonaoqi");
 
-Msgrostonaoqi::Msgrostonaoqi(std::string pip, std::string ip, int port, int pport):
+Msgrostonaoqi::Msgrostonaoqi(std::string pip, std::string ip,
+                             int port, int pport):
+  nh_("~"),
   pip_(pip),
   ip_(ip),
   port_(port),
   pport_(pport),
   brokerName_("NaoROSBroker"),
-  nh_("~"),
   eventName("/recognized_object_array"),
-  topic_obj("/recognized_object_array")
+  topic_obj("/recognized_object_array"),
+  topic_table(""),
+  initialized_naoqi(false),
+  package_name_("orkobj_tonaoqi")
 {
   initialized_naoqi = false;
+
+  nh_.getParam("nao_ip", pip_);
+  nh_.getParam("pc_ip", ip_);
+  nh_.getParam("nao_port", pport_);
+  nh_.getParam("pc_port", port_);
+  ROS_INFO_STREAM("-- connecting to " << pip_ << " " << pport_);
+
+  init();
 }
 
-void Msgrostonaoqi::init(int argc, char ** argv)
+Msgrostonaoqi::~Msgrostonaoqi()
+{
+  try
+  {
+    pMemoryProxy->unsubscribeToEvent("PictureDetected", package_name_);
+  }
+  catch (const AL::ALError& e) {
+    qiLogError() << e.what();
+  }
+
+  try
+  {
+    pVRProxy->callVoid("unsubscribe", package_name_.c_str());
+  }
+  catch (const AL::ALError& e) {
+    qiLogError() << e.what();
+  }
+}
+
+void Msgrostonaoqi::init()//int argc, char ** argv)
 {
   //initialize ros node parameters
   nh_.param("object_topic",topic_obj,std::string("/recognized_object_array"));
   nh_.param("table_topic",topic_table,std::string("/table_array"));
-  std::cout << "-- listen to the topic " << topic_obj << std::endl;
+  ROS_INFO_STREAM("-- listen to the topics " << topic_obj);
 
   //initialize the NAOqi proxies and events
   if (!connectNaoQi() || !connectProxy())
@@ -42,7 +73,7 @@ void Msgrostonaoqi::init(int argc, char ** argv)
     eventName = topic_obj;
     pMemoryProxy = boost::shared_ptr<AL::ALMemoryProxy>(new AL::ALMemoryProxy(m_broker));
     pMemoryProxy->declareEvent(eventName);
-    std::cout << "-- notify to NAOqi event " << eventName << std::endl;
+    //std::cout << "-- notifying the NAOqi events: " << eventName << std::endl;
   }
   catch (const AL::ALError& e) {
     qiLogError() << e.what();
@@ -50,6 +81,15 @@ void Msgrostonaoqi::init(int argc, char ** argv)
 
   //initialize the ros subscriber
   sub_obj_ = nh_.subscribe<object_recognition_msgs::RecognizedObjectArray>(topic_obj, 10, &Msgrostonaoqi::notify, this);
+
+
+  try
+  {
+    pMemoryProxy->subscribeToEvent("PictureDetected", package_name_, "PictureDetected");
+  }
+  catch (const AL::ALError& e) {
+    qiLogError() << e.what();
+  }
 }
 
 void Msgrostonaoqi::notify(const object_recognition_msgs::RecognizedObjectArray::ConstPtr& msg)
@@ -73,7 +113,7 @@ void Msgrostonaoqi::notify(const object_recognition_msgs::RecognizedObjectArray:
     valOutcome.arrayPush(position);
     valOutcome.arrayPush(orientation);
 
-    std::cout << valOutcome << std::endl;
+std::cout << "outcome: " << valOutcome << std::endl;
 
     if (initialized_naoqi)
       pMemoryProxy->raiseMicroEvent(eventName, valOutcome);
@@ -98,7 +138,7 @@ bool Msgrostonaoqi::connectNaoQi()
     //AL::ALBrokerManager::kill();
     return false;
   }
-  ROS_INFO("NAOqi broker ready.");
+  ROS_INFO("NAOqi broker ready");
   return true;
 }
 
@@ -118,6 +158,36 @@ bool Msgrostonaoqi::connectProxy()
     ROS_ERROR("Could not create ALMemoryProxy.");
     return false;
   }
-  ROS_INFO("Proxies to ALMotion and ALMemory ready.");
+  ROS_INFO("Proxy to ALMemory is ready");
+
+
+  //connnect to vision recognition
+  try
+  {
+    pVRProxy = m_broker->getProxy("ALVisionRecognition");
+    //pVRProxy = boost::shared_ptr<AL::ALProxy>(new AL::ALProxy(m_broker, "ALVisionRecognition"));
+
+    pVRProxy->callVoid("setResolution", 2);
+    pVRProxy->callVoid("subscribe", package_name_.c_str());
+  }
+  catch (const AL::ALError& e)
+  {
+     ROS_ERROR("Could not create ALVisionRecognitionProxy");
+     return -1;
+  }
+  ROS_INFO("Proxy to ALVisionRecognition is ready");
+
+    //std::string filename = "";
+    //    bool ALVisionRecognitionProxy::learnFromFile(const std::string& filename, const std::string& name, const std::vector<std::string>& tags, bool isWholeImage = true, bool forced = false)
+    //std::string result1 = pVRProxy->call<std::string>("learnFromFile", filename, "cola", "can", true, true);
+    //std::string result = pVRProxy->call<std::string>("detectFromFile", filename);
+
+
   return true;
+}
+
+void Msgrostonaoqi::PictureDetected(const AL::ALValue &value, const AL::ALValue &msg)
+{
+
+  std::cout <<  " ***********" << msg[0]<< std::endl;
 }
